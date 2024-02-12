@@ -7,25 +7,39 @@ from itemloaders.processors import MapCompose
 
 class UnsplashImgsSpider(CrawlSpider):
     name = "unsplash_imgs"
-    allowed_domains = ["www.unsplash.com"]
+    allowed_domains = ["unsplash.com"]
     start_urls = ["https://unsplash.com/images/things/money"]
 
     rules = (
         Rule(LinkExtractor(restrict_xpaths=('//div[@class="GFY23"]/div/a')), callback='parse_item', follow=True),
-
+        
     )
 
-    # //figure[@itemprop="image"]/div[@class="GFY23"]/div/a
 
     def parse_item(self, response):
-        print(response.url)
-        # loader = ItemLoader(item=UnsplashItem(), response=response)
-        # loader.default_imput_processor = MapCompose(str.strip)
+        loader = ItemLoader(item=UnsplashItem(), response=response)
+        loader.default_imput_processor = MapCompose(str.strip)
 
-        # loader.add_xpath('name', '//h1/text()')
-        # views_span = response.xpath('//div[@class="_NeDM"][0]/span/text()').get()
-        # loader.add_value('views', views_span)
-        # downloads_span = response.xpath('//div[@class="_NeDM"][1]/span/text()').get()
-        # loader.add_value('downloads', downloads_span)
+        name_img = response.xpath('//h1/text()').get()
+        if name_img:
+            loader.add_xpath('name', '//h1/text()')
+        else:
+            loader.add_value('name', 'None')
+
+        category_img = response.xpath('//div[@class="nzfdq"]/a[@class="glD4s eziW_ HaWw1"]/text()').get()
+        if category_img:
+            loader.add_xpath('category', '//div[@class="nzfdq"]/a[@class="glD4s eziW_ HaWw1"]/text()')
+        else:
+            loader.add_value('category', 'None')
+
+        url_img = response.xpath('//div[@class="MorZF"]/img@src').get()
+        loader.add_value('image_urls', url_img) 
+
+        
+
+        # loader.add_value('image_urls', absolute_umage_urls)
+
+
+        yield loader.load_item()
 
  
